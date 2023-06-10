@@ -196,6 +196,7 @@ void AB_ImporterDialog_Init(GWEN_DIALOG *dlg)
   AB_IMPORTER_DIALOG *xdlg;
   GWEN_DB_NODE *dbPrefs;
   int i;
+  const char *s;
 
   DBG_INFO(AQBANKING_LOGDOMAIN, "Init");
 
@@ -212,8 +213,22 @@ void AB_ImporterDialog_Init(GWEN_DIALOG *dlg)
                               I18N("File Import Wizard"),
                               0);
 
+  /* read filename */
+  s=GWEN_DB_GetCharValue(dbPrefs, "filename", 0, NULL);
+  if (s && *s)
+    xdlg->fileName=strdup(s);
   if (xdlg->fileName)
     GWEN_Dialog_SetCharProperty(dlg, "wiz_file_edit", GWEN_DialogProperty_Value, 0, xdlg->fileName, 0);
+
+  /* read importer */
+  s=GWEN_DB_GetCharValue(dbPrefs, "importer", 0, NULL);
+  if (s && *s)
+    xdlg->importerName=strdup(s);
+
+  /* read profile */
+  s=GWEN_DB_GetCharValue(dbPrefs, "wiz_profile_list", 0, NULL);
+  if (s && *s)
+    xdlg->profileName=strdup(s);
 
   /* select first page */
   GWEN_Dialog_SetIntProperty(dlg, "wiz_stack", GWEN_DialogProperty_Value, 0, 0, 0);
@@ -331,6 +346,7 @@ void AB_ImporterDialog_Fini(GWEN_DIALOG *dlg)
 {
   AB_IMPORTER_DIALOG *xdlg;
   int i;
+  const char *s;
   GWEN_DB_NODE *dbPrefs;
 
   DBG_INFO(AQBANKING_LOGDOMAIN, "Fini");
@@ -340,6 +356,21 @@ void AB_ImporterDialog_Fini(GWEN_DIALOG *dlg)
   assert(xdlg);
 
   dbPrefs=GWEN_Dialog_GetPreferences(dlg);
+
+  /* store filename */
+  s=AB_ImporterDialog_GetFileName(dlg);
+  if (s && *s)
+    GWEN_DB_SetCharValue(dbPrefs, GWEN_DB_FLAGS_OVERWRITE_VARS, "filename", s);
+
+  /* store importer */
+  s=AB_ImporterDialog_GetImporterName(dlg);
+  if (s && *s)
+    GWEN_DB_SetCharValue(dbPrefs, GWEN_DB_FLAGS_OVERWRITE_VARS, "importer", s);
+
+  /* store profile */
+  s=AB_ImporterDialog_GetProfileName(dlg);
+  if (s && *s)
+    GWEN_DB_SetCharValue(dbPrefs, GWEN_DB_FLAGS_OVERWRITE_VARS, "profile", s);
 
   /* store dialog width */
   i=GWEN_Dialog_GetIntProperty(dlg, "", GWEN_DialogProperty_Width, 0, -1);
